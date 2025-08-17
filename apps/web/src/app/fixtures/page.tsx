@@ -1,3 +1,4 @@
+// apps/web/app/fixtures/page.tsx
 export const dynamic = "force-dynamic";
 
 type Fixture = { apiId: number; timestamp: number; lineupStatus: string };
@@ -20,10 +21,15 @@ async function getData(page = 1, limit = 20) {
 export default async function FixturesPage({
   searchParams,
 }: {
-  searchParams?: { page?: string; limit?: string };
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const page = Number(searchParams?.page || 1);
-  const limit = Number(searchParams?.limit || 20);
+  const sp = (await searchParams) ?? {};
+  const pageStr = Array.isArray(sp.page) ? sp.page[0] : sp.page;
+  const limitStr = Array.isArray(sp.limit) ? sp.limit[0] : sp.limit;
+
+  const page = Number(pageStr ?? 1);
+  const limit = Number(limitStr ?? 20);
+
   const { data, total } = await getData(page, limit);
 
   return (
