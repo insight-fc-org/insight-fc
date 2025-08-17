@@ -20,6 +20,7 @@ jobs:
         with: { node-version: '20', cache: 'pnpm' }
       - run: pnpm install
       - run: echo "DATABASE_URL=mongodb://localhost:27017/insightfc" >> .env
+      - run: pnpm prisma:generate
       - run: pnpm build
       - run: pnpm test
       - name: Start API

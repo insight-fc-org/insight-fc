@@ -10,7 +10,8 @@
     "test": "turbo run test",
     "bdd": "NODE_OPTIONS=--import=tsx cucumber-js --import 'features/**/*.ts' --format progress",
     "db:up": "docker compose -f infra/docker-compose.yaml up -d",
-    "db:down": "docker compose -f infra/docker-compose.yaml down -v"
+    "db:down": "docker compose -f infra/docker-compose.yaml down -v",
+    "prisma:generate": "prisma generate --schema=infra/prisma/schema.prisma"
   },
   "devDependencies": {
     "@cucumber/cucumber": "^12.1.0",
