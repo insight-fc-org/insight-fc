@@ -1,13 +1,24 @@
 {
   "compilerOptions": {
-  "target": "ES2022",
+    "baseUrl": ".",
+    "paths": {
+      "shared/*": [
+        "packages/shared/*"
+      ]
+    },
+    "target": "ES2022",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "strict": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "types": ["node"],
+    "types": [
+      "node"
+    ],
     "skipLibCheck": true
-},
-  "include": ["features", "test-support"]
+  },
+  "include": [
+    "features",
+    "test-support"
+  ]
 }
