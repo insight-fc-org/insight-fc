@@ -3,17 +3,27 @@ on:
   push:
     branches: [ main ]
   pull_request:
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   build-test:
     runs-on: ubuntu-latest
+    env:
+      CI: true
+      NEXT_TELEMETRY_DISABLED: '1'
+      NODE_ENV: test
     steps:
       - uses: actions/checkout@v4
+
       - uses: pnpm/action-setup@v4
         with:
           package_json_file: package.json
           run_install: false
+
       - uses: actions/setup-node@v4
         with: { node-version: '20', cache: 'pnpm' }
+
       - name: Start MongoDB (single-node replica set)
         run: |
           docker run -d --name mongo-rs -p 27017:27017 mongo:7 \
@@ -39,23 +49,63 @@ jobs:
             fi
             sleep 1
           done
+
+      - name: Cache Turbo & Next build caches
+        uses: actions/cache@v4
+        with:
+          path: |
+            .turbo
+            apps/web/.next/cache
+          key: ${{ runner.os }}-turbo-next-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-turbo-next-
+
       - run: pnpm install
+
       - run: echo "DATABASE_URL=mongodb://localhost:27017/insightfc?replicaSet=rs0" >> .env
+
       - run: pnpm prisma:generate
+
       - run: pnpm build
+
       - run: pnpm test
+
       - name: Start API
         run: |
           DATABASE_URL="mongodb://localhost:27017/insightfc?replicaSet=rs0" \
           API_PORT=3000 \
           NODE_ENV=test \
           pnpm --filter api dev & sleep 8
+
       - name: Wait for API
         run: |
           for i in {1..30}; do
-            if curl -sf http://localhost:3000/ > /dev/null; then exit 0; fi
+            if curl -sf http://localhost:3000/healthz > /dev/null 2>&1 || curl -sf http://localhost:3000/ > /dev/null 2>&1; then
+              exit 0
+            fi
             sleep 1
           done
           echo "API did not become healthy in time" && exit 1
-      - name: Run BDD
-        run: API_BASE_URL=http://localhost:3000 pnpm bdd
+
+      - name: Export OpenAPI JSON
+        run: curl -sf http://localhost:3000/docs-json -o openapi.json
+
+      - name: Run BDD (with JSON report)
+        run: |
+          API_BASE_URL=http://localhost:3000 \
+          NODE_OPTIONS=--import=tsx \
+          npx cucumber-js --import 'features/**/*.ts' --format progress --format json:./reports/cucumber.json
+
+      - name: Generate Cucumber HTML
+        run: |
+          npx multiple-cucumber-html-reporter --jsonDir=./reports --reportPath=./reports/html
+
+      - name: Upload test artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bdd-and-openapi
+          path: |
+            reports/**
+            openapi.json
+          if-no-files-found: warn
