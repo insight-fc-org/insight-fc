@@ -38,3 +38,8 @@ yarn-error.log*
 *.pem
 
 /generated/prisma
+
+# BDD reports
+/reports/
+/reports/html/
+/reports/cucumber.json
