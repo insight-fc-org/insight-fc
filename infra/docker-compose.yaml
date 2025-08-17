@@ -1,0 +1,8 @@
+services:
+  mongo:
+    image: mongodb/mongodb-community-server:7.0-ubi8
+    container_name: insight-mongo
+    ports: ["27017:27017"]
+    volumes: [ "mongo_data:/data/db" ]
+volumes:
+  mongo_data: {}

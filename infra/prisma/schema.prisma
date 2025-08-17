@@ -1,0 +1,17 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model Fixture {
+  id           String @id @default(auto()) @map("_id") @db.ObjectId
+  apiId        Int    @unique
+  timestamp    Int
+  lineupStatus String @default("unknown")
+
+  @@index([timestamp, lineupStatus])
+}

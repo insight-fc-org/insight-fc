@@ -6,15 +6,29 @@
     "dev": "turbo run dev",
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "check-types": "turbo run check-types"
+    "check-types": "turbo run check-types",
+    "test": "turbo run test",
+    "bdd": "NODE_OPTIONS=--import=tsx cucumber-js --import 'features/**/*.ts' --format progress",
+    "db:up": "docker compose -f infra/docker-compose.yaml up -d",
+    "db:down": "docker compose -f infra/docker-compose.yaml down -v"
   },
   "devDependencies": {
+    "@cucumber/cucumber": "^12.1.0",
+    "@types/node": "^22.15.3",
+    "pactum": "^3.8.0",
     "prettier": "^3.6.2",
+    "prisma": "^6.14.0",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.20.4",
     "turbo": "^2.5.6",
-    "typescript": "5.9.2"
+    "typescript": "5.9.2",
+    "zod": "^4.0.17"
   },
   "packageManager": "pnpm@9.0.0",
   "engines": {
     "node": ">=18"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.14.0"
   }
 }
