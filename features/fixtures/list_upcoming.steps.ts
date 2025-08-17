@@ -13,8 +13,15 @@ const BASE = process.env.API_BASE_URL ?? "http://localhost:3000";
 Given(
   "the system has fixtures scheduled in the next 60 minutes",
   async function () {
-    // We already seeded via script; call again to be idempotent.
-    await spec().post(`${BASE}/_test/seed`).expectStatus(201);
+    try {
+      // We already seeded via script; call again to be idempotent.
+      await spec().post(`${BASE}/_test/seed`).expectStatus(201);
+    } catch (error) {
+      // Log a descriptive error message to the console
+      console.error("Error: Failed to seed the database for the test.", error);
+      // Re-throw the error to ensure the Cucumber test runner marks this step as failed.
+      throw error;
+    }
   },
 );
 

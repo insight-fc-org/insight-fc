@@ -29,5 +29,12 @@ jobs:
           API_PORT=3000 \
           NODE_ENV=test \
           pnpm --filter api dev & sleep 8
+      - name: Wait for API
+        run: |
+          for i in {1..30}; do
+            if curl -sf http://localhost:3000/ > /dev/null; then exit 0; fi
+            sleep 1
+          done
+          echo "API did not become healthy in time" && exit 1
       - name: Run BDD
         run: API_BASE_URL=http://localhost:3000 pnpm bdd
